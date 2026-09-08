@@ -351,10 +351,10 @@ export default function PrahariDashboard() {
             <div style={S.cardUnit}>°C (DHT22)</div>
           </div>
 
-          <div style={S.card(latest.pressure < 1000)}>
+           <div style={S.card(false)}>
             <div style={S.cardIcon}>🔵</div>
             <div style={S.cardLabel}>PRESSURE</div>
-            <div style={S.cardVal(latest.pressure < 1000 ? "#9B59B6" : "#E8EDF3")}>{latest.pressure.toFixed(1)}</div>
+            <div style={S.cardVal("#9B59B6")}>
             <div style={S.cardUnit}>hPa (BMP180)</div>
           </div>
 

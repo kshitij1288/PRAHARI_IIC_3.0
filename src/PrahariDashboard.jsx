@@ -326,7 +326,7 @@ export default function PrahariDashboard() {
           <div style={S.card(false)}>
             <div style={S.cardIcon}>📐</div>
             <div style={S.cardLabel}>VIBRATION</div>
-            <div style={S.cardVal("#E8EDF3")}>{Math.abs(latest.accelMag - 9.81).toFixed(3)}</div>
+            <div style={S.cardVal("#E8EDF3")}>{Math.abs(latest.accelMag - 9.81).toFixed(1)}</div>
             <div style={S.cardUnit}>m/s² / ADXL345</div>
           </div>
 

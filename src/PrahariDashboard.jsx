@@ -1,3 +1,4 @@
+import prahariLogo from "./assets/prahari-logo.png";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
@@ -266,7 +267,30 @@ export default function PrahariDashboard() {
       `}</style>
 
       <nav style={S.nav}>
-        <div style={S.navLogo}>PRAHARI</div>
+        <div style={{
+  display: "flex",
+  alignItems: "center",
+  gap: "10px"
+}}>
+  <img
+    src={prahariLogo}
+    alt="PRAHARI Logo"
+    style={{
+      width: "42px",
+      height: "42px",
+      objectFit: "contain"
+    }}
+  />
+
+  <div style={{
+    fontWeight: 700,
+    fontSize: 18,
+    letterSpacing: "0.1em",
+    color: "#F0A500"
+  }}>
+    PRAHARI
+  </div>
+</div>
         <div style={S.navRight}>
           <div style={S.liveBadge(connected && live)}>
             <div style={S.dot(connected && live)} />

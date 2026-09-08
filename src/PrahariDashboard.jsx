@@ -323,10 +323,10 @@ export default function PrahariDashboard() {
             <div style={S.cardUnit}>% saturation</div>
           </div>
 
-          <div style={S.card(latest.accelMag > 0.3)}>
+          <div style={S.card(false)}>
             <div style={S.cardIcon}>📐</div>
             <div style={S.cardLabel}>VIBRATION</div>
-            <div style={S.cardVal(latest.accelMag > 0.3 ? "#E74C3C" : "#E8EDF3")}>{latest.accelMag.toFixed(3)}</div>
+            <div style={S.cardVal("#E8EDF3")}>{Math.abs(latest.accelMag - 9.81).toFixed(3)}</div>
             <div style={S.cardUnit}>m/s² / ADXL345</div>
           </div>
 
@@ -425,7 +425,7 @@ export default function PrahariDashboard() {
                     <td style={S.td(i%2)}>{r.moisture.toFixed(1)}%</td>
                     <td style={S.td(i%2)}>{r.moisture2.toFixed(1)}%</td>
                     <td style={{...S.td(i%2),color:r.rain?"#4A9ECC":"#526070",fontWeight:r.rain?700:400}}>{r.rain?"WET":"DRY"}</td>
-                    <td style={S.td(i%2)}>{r.accelMag.toFixed(3)}</td>
+                    <td style={S.td(i%2)}>{Math.abs(r.accelMag - 9.81).toFixed(3)}</td>
                     <td style={S.td(i%2)}>{r.humidity.toFixed(1)}%</td>
                     <td style={S.td(i%2)}>{r.temp.toFixed(1)}°C</td>
                     <td style={S.td(i%2)}>{r.pressure.toFixed(1)} hPa</td>

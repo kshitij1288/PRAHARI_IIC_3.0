@@ -10,20 +10,31 @@ const MAX_LOG = 100;
 
 function normalizeApiReading(item) {
   if (!item) return null;
+
+  const rawRiskScore = Number(item.risk_score);
+  const riskText = String(item.risk ?? item.risk_label ?? item.risk_level ?? "").toUpperCase();
+
+  // Backward-compatible fallback for records created before risk_score existed.
+  let risk = Number.isFinite(rawRiskScore) ? rawRiskScore : (
+    riskText === "HIGH" ? 100 :
+    riskText === "MEDIUM" ? 50 :
+    0
+  );
+
   return {
     ts: item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString(),
     moisture: Number(item.s1_pct ?? item.moisture ?? 0),
     moisture2: Number(item.s2_pct ?? 0),
-    accelX: Number(item.accel_x ?? item.accelX ?? 0),
-    accelY: Number(item.accel_y ?? item.accelY ?? 0),
-    accelZ: Number(item.accel_z ?? item.accelZ ?? 9.81),
-    accelMag: Number(item.vibration ?? item.accelMag ?? 0),
+    accelX: Number(item.ax ?? item.accel_x ?? item.accelX ?? 0),
+    accelY: Number(item.ay ?? item.accel_y ?? item.accelY ?? 0),
+    accelZ: Number(item.az ?? item.accel_z ?? item.accelZ ?? 9.81),
+    accelMag: Number(item.magnitude ?? item.accelMag ?? 0),
     rain: Number(item.rain_detected ?? item.rain ?? 0),
     humidity: Number(item.dht_humidity ?? item.humidity ?? 0),
     pressure: Number(item.bmp_pressure ?? item.pressure ?? 0),
     temp: Number(item.dht_temp ?? item.temp ?? 0),
-    risk: Number(item.risk_score ?? item.risk ?? 0),
-    riskLabel: item.risk_label ?? item.risk_level ?? "",
+    risk,
+    riskLabel: riskText,
     confidence: Number(item.confidence ?? 0),
     sampleId: item.sample_id ?? "",
   };
@@ -351,10 +362,10 @@ export default function PrahariDashboard() {
             <div style={S.cardUnit}>°C (DHT22)</div>
           </div>
 
-           <div style={S.card(false)}>
+          <div style={S.card(false)}>
             <div style={S.cardIcon}>🔵</div>
             <div style={S.cardLabel}>PRESSURE</div>
-            <div style={S.cardVal("#9B59B6")}>
+            <div style={S.cardVal("#9B59B6")}>{latest.pressure.toFixed(1)}</div>
             <div style={S.cardUnit}>hPa (BMP180)</div>
           </div>
 

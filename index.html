@@ -1,15 +1,1743 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="theme-color" content="#0D1821" />
-    <meta name="description" content="PRAHARI — AI-based Wayanad landslide early warning and risk monitoring system" />
-    <title>PRAHARI — Wayanad Landslide Monitor</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRAHARI | Wayanad Slope Monitoring &amp; Landslide Preparedness</title>
+  <meta name="description" content="PRAHARI — AI-based Wayanad landslide early warning and slope-monitoring system. Live ESP32 telemetry feed from api.prahari.space &amp; interactive hackathon preparedness simulation." />
+  
+  <!-- Google Fonts: Space Grotesk + Plus Jakarta Sans + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <!-- GLOBAL SAFETY NOTICE STRIP -->
+  <aside class="safety-top-strip" role="alert" aria-label="Project Status and Safety Notice">
+    <div class="container strip-content">
+      <div class="strip-left">
+        <span class="strip-badge">HACKATHON INNOVATION CONCEPT</span>
+        <span class="strip-org">&lt;HYPNEXIS&gt; &bull; WAYANAD SLOPE MONITOR</span>
+      </div>
+      <p class="strip-text">
+        <strong>SAFETY NOTICE:</strong> Experimental IoT research system &bull; 
+        <strong>Not a public warning service</strong> &bull; 
+        <strong>Does not issue evacuation orders</strong> &bull; 
+        Always adhere strictly to official <a href="#safety">IMD, NDMA &amp; SDMA advisories</a>.
+      </p>
+      <a href="#safety" class="strip-link">Read Disclaimers &rarr;</a>
+    </div>
+  </aside>
+
+  <!-- NAVIGATION BAR -->
+  <header class="site-header" id="navbar">
+    <div class="container header-container">
+      <a href="#" class="brand-logo" aria-label="PRAHARI Home">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m8 3 4 8 5-5 5 15H2L8 3z"></path>
+            <circle cx="12" cy="7" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-title">PRAHARI<span class="accent-dot">.</span></span>
+          <span class="logo-subtitle">Slope Sentinel</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav" aria-label="Primary Navigation">
+        <a href="#about" class="nav-link">Explanation</a>
+        <a href="#dashboard" class="nav-link nav-highlight">
+          <span class="pulse-mini"></span> Dashboard (Live &amp; Sim)
+        </a>
+        <a href="#architecture" class="nav-link">Sensors</a>
+        <a href="#pipeline" class="nav-link">Data Flow</a>
+        <a href="#ai-model" class="nav-link">AI Model</a>
+        <a href="#thresholds" class="nav-link">Thresholds</a>
+        <a href="#roadmap" class="nav-link">Roadmap</a>
+        <a href="#safety" class="nav-link nav-safety">Safety &amp; Limits</a>
+      </nav>
+
+      <!-- Action Button & Mobile Toggle -->
+      <div class="nav-actions">
+        <div class="live-status-pill" id="headerLiveStatus">
+          <span class="pulse-dot" id="headerLiveDot"></span>
+          <span id="headerLiveText">Connecting...</span>
+        </div>
+        <button id="mobileMenuBtn" class="mobile-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Navigation -->
+    <div id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+      <nav class="mobile-nav-links">
+        <a href="#about" class="mobile-nav-link">Project Explanation</a>
+        <a href="#dashboard" class="mobile-nav-link">Dashboard (Live &amp; Sim)</a>
+        <a href="#architecture" class="mobile-nav-link">Hardware &amp; Sensors</a>
+        <a href="#pipeline" class="mobile-nav-link">Data Flow (Sense &rarr; Assess &rarr; Comm)</a>
+        <a href="#ai-model" class="mobile-nav-link">Proposed AI Model</a>
+        <a href="#thresholds" class="mobile-nav-link">Review Thresholds</a>
+        <a href="#roadmap" class="mobile-nav-link">Pilot Roadmap</a>
+        <a href="#safety" class="mobile-nav-link mobile-nav-safety">Safety &amp; Limitations</a>
+      </nav>
+      <div class="mobile-drawer-footer">
+        <div class="simulation-pill">
+          <span class="pulse-dot"></span> LIVE BACKEND SUPPORT &bull; api.prahari.space
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="hero">
+      <div class="hero-bg-overlay"></div>
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="hero-badge-row">
+            <span class="badge badge-vermillion">🛰️ LIVE BACKEND CONNECTED</span>
+            <span class="badge badge-teal">WAYANAD LANDSLIDE MONITOR &bull; &lt;HYPNEXIS&gt;</span>
+          </div>
+
+          <h1 class="hero-title">
+            Local slope signals for clearer community preparedness.
+          </h1>
+
+          <p class="hero-lead">
+            <strong>PRAHARI</strong> proposes rugged, low-cost ESP32 sensor nodes placed near vulnerable hillsides (such as Wayanad's fragile ghats) to monitor hyper-local soil saturation, tilt velocity, and precipitation alongside macro-level advisories from the <strong>India Meteorological Department (IMD)</strong> and <strong>State Disaster Management Authorities (SDMAs)</strong>.
+          </p>
+
+          <div class="hero-cta-group">
+            <a href="#dashboard" class="btn btn-vermillion btn-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                <path d="M3 9h18"></path>
+                <path d="M9 21V9"></path>
+              </svg>
+              <span>Launch Dashboard (Live &amp; Sim)</span>
+            </a>
+            <a href="https://www.prahari.space" target="_blank" rel="noopener noreferrer" class="btn btn-teal-outline btn-lg">
+              <span>Visit prahari.space &nearr;</span>
+            </a>
+          </div>
+
+          <!-- Highlight Cards in Hero -->
+          <div class="hero-features-grid">
+            <div class="hero-feature-card">
+              <div class="feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+              <div>
+                <h4>Live Telemetry &amp; Simulation</h4>
+                <p>Seamlessly toggle between live <code>api.prahari.space</code> telemetry and synthetic scenario sandboxes.</p>
+              </div>
+            </div>
+
+            <div class="hero-feature-card">
+              <div class="feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
+              </div>
+              <div>
+                <h4>Sense &rarr; Assess &rarr; Communicate</h4>
+                <p>Dual capacitive soil probes, ADXL345 3-axis motion, and automated risk synthesis.</p>
+              </div>
+            </div>
+
+            <div class="hero-feature-card">
+              <div class="feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <div>
+                <h4>Dual Review Thresholds</h4>
+                <p>60% &amp; 85% review milestones—clearly marked unvalidated, pending local field calibration.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Graphic / Interactive Signal Preview -->
+        <div class="hero-visual">
+          <div class="hero-card-preview">
+            <div class="preview-header">
+              <div class="preview-dot green"></div>
+              <div class="preview-dot yellow"></div>
+              <div class="preview-dot vermillion"></div>
+              <span class="preview-tag">WAYANAD MONITOR FEED</span>
+            </div>
+            <div class="preview-body">
+              <div class="node-status-row">
+                <span class="node-id">STATION: MEPPADI / CHOORALMALA RIDGE</span>
+                <span class="node-badge-sim" id="heroBackendBadge">api.prahari.space</span>
+              </div>
+              <div class="preview-metric-row">
+                <div class="metric-item">
+                  <span class="label">Current Risk Index</span>
+                  <span class="val accent-val" id="heroRiskVal">--<span class="unit">/100</span></span>
+                  <span class="sub-label" id="heroRiskStatus">Fetching...</span>
+                </div>
+                <div class="metric-item">
+                  <span class="label">Soil Moisture (S1)</span>
+                  <span class="val" id="heroMoistVal">--<span class="unit">% VWC</span></span>
+                  <span class="sub-label">Dual Capacitive Probe</span>
+                </div>
+              </div>
+              <div class="preview-graph-placeholder" id="heroBarsContainer">
+                <div class="graph-bar" style="height: 35%;"></div>
+                <div class="graph-bar" style="height: 48%;"></div>
+                <div class="graph-bar" style="height: 42%;"></div>
+                <div class="graph-bar" style="height: 65%;"></div>
+                <div class="graph-bar" style="height: 52%;"></div>
+                <div class="graph-bar" style="height: 70%;"></div>
+                <div class="graph-bar active" style="height: 58%;"></div>
+              </div>
+              <p class="preview-disclaimer">
+                Supports real-time feed from <code>https://api.prahari.space</code> with instant fallback sandbox.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: PROJECT EXPLANATION -->
+    <section class="section section-about" id="about">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">PROJECT RATIONALE</span>
+          <h2 class="section-title">Bridging Regional Forecasts with Slope-Level Reality</h2>
+          <p class="section-description">
+            How PRAHARI proposes to complement district-level meteorological advisories with hyper-local, community-accessible slope signals in vulnerable sectors like Wayanad.
+          </p>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-card problem-card">
+            <div class="card-badge warning">THE LOCAL GAP</div>
+            <h3>Why District-Level Alerts Need Slope Context</h3>
+            <p>
+              In mountainous terrain (such as Wayanad, Uttarakhand, or the Western Ghats), the <strong>India Meteorological Department (IMD)</strong> and <strong>State Disaster Management Authorities (SDMAs)</strong> provide invaluable regional weather bulletins (e.g. orange or red monsoon alerts spanning hundreds of square kilometers).
+            </p>
+            <p>
+              However, whether a specific slope slips depends on hyper-localized geotechnical conditions: localized rain shadow cloudbursts, pre-existing groundwater saturation, slope angle of repose, drainage blockages, and micro-movements in soil strata. A village 5 km away may remain completely stable while an adjacent slope reaches critical saturation.
+            </p>
+            <div class="quote-callout">
+              "Macro-level satellite radar tells us a storm is above the district; local slope sensors tell a village whether their specific hillside is absorbing or shedding that water."
+            </div>
+          </div>
+
+          <div class="about-card solution-card">
+            <div class="card-badge success">THE PROPOSED CONCEPT</div>
+            <h3>What PRAHARI Proposes</h3>
+            <p>
+              <strong>PRAHARI</strong> (meaning <em>Sentinel</em> or <em>Watchman</em>) is an open IoT slope sentinel framework developed by <strong>&lt;HYPNEXIS&gt;</strong>:
+            </p>
+            <ul class="check-list">
+              <li><strong>Continuous Edge Monitoring:</strong> Measures subsurface soil moisture across dual depths (S1 &amp; S2), rainfall presence, tilt displacement, and micro-vibrations.</li>
+              <li><strong>Contextual Assessment:</strong> Evaluates local readings alongside official IMD/SDMA regional alerts to estimate a composite risk score (0–100).</li>
+              <li><strong>Live Backend Integration:</strong> Connects to <code>https://api.prahari.space</code> to stream live ESP32 prediction logs.</li>
+              <li><strong>Community Empowerment:</strong> Equips Village Disaster Management Committees (VDMC) and panchayat focal points with local observational indicators.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Complementary Architecture Callout -->
+        <div class="synergy-banner">
+          <div class="synergy-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="synergy-content">
+            <h4>Designed to Work Alongside IMD &amp; SDMA, Not Instead of Them</h4>
+            <p>
+              Official government agencies possess national radar, satellite telemetry, and weather models. PRAHARI is conceptualized to supply the "last 100 meters" of ground-truth observation—giving village committees early observational signals to clean culverts, monitor road cuts, and prepare before disaster strikes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: ENHANCED DASHBOARD (LIVE BACKEND + SIMULATION MODES) -->
+    <section class="section section-dashboard" id="dashboard">
+      <div class="container">
+
+        <!-- DUAL MODE SELECTOR HEADER -->
+        <div class="mode-switcher-container">
+          <div class="mode-switcher-card">
+            <div class="mode-info">
+              <span class="mode-eyebrow">DASHBOARD OPERATION MODE:</span>
+              <h3 class="mode-heading" id="activeModeLabel">🛰️ LIVE BACKEND MODE (api.prahari.space)</h3>
+            </div>
+            
+            <div class="mode-toggle-group" role="group" aria-label="Dashboard Source Mode">
+              <button type="button" id="btnModeLive" class="btn-mode active" title="Connect to live backend at api.prahari.space">
+                <span class="mode-icon">🛰️</span>
+                <div class="mode-btn-text">
+                  <span class="mode-btn-title">LIVE FEED</span>
+                  <span class="mode-btn-sub">api.prahari.space</span>
+                </div>
+              </button>
+
+              <button type="button" id="btnModeSim" class="btn-mode" title="Switch to offline interactive simulation sandbox">
+                <span class="mode-icon">🧪</span>
+                <div class="mode-btn-text">
+                  <span class="mode-btn-title">SIMULATOR</span>
+                  <span class="mode-btn-sub">Sliders &amp; Scenarios</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE BACKEND CONNECTION STATUS BAR -->
+        <div id="liveConnectionBanner" class="live-connection-card">
+          <div class="conn-left">
+            <div class="pulse-indicator-live">
+              <span class="pulse-ring-live" id="livePulseRing"></span>
+              <span class="pulse-core-live" id="livePulseCore"></span>
+            </div>
+            <div class="conn-meta">
+              <div class="conn-title-row">
+                <span class="conn-status-text" id="liveConnStatusText">CONNECTING TO PRAHARI BACKEND...</span>
+                <span class="conn-badge" id="liveConnBadge">POLLING 3s</span>
+              </div>
+              <span class="conn-endpoint">Target: <code id="displayApiEndpoint">https://api.prahari.space</code></span>
+            </div>
+          </div>
+
+          <div class="conn-actions">
+            <!-- Simulated Sample Packet Injector -->
+            <button id="injectSampleBtn" class="btn btn-sm btn-teal-outline" title="Simulate an ESP32 hardware packet injection to test live data flow">
+              ⚡ Inject Test Reading
+            </button>
+            
+            <!-- Pause / Resume live polling -->
+            <button id="togglePollingBtn" class="btn btn-sm btn-vermillion">
+              <span id="togglePollingIcon">&#10074;&#10074;</span>
+              <span id="togglePollingText">Pause Feed</span>
+            </button>
+
+            <!-- Edit API Endpoint popover toggle -->
+            <button id="openApiSettingsBtn" class="btn btn-sm btn-ghost" title="Change API endpoint URL">
+              ⚙️ Endpoint
+            </button>
+          </div>
+        </div>
+
+        <!-- SIMULATION WARNING BANNER (Shown in Simulation Mode) -->
+        <div id="simModeWarning" class="dashboard-sim-warning" style="display: none;" role="region" aria-label="Simulated Readings Warning">
+          <div class="sim-warning-header">
+            <div class="pulse-indicator">
+              <span class="pulse-ring"></span>
+              <span class="pulse-core"></span>
+            </div>
+            <span class="sim-warning-title">ALL VALUES BELOW ARE SIMULATED READINGS</span>
+            <span class="sim-warning-badge">DEMONSTRATION ONLY</span>
+          </div>
+          <p class="sim-warning-desc">
+            You are in <strong>Simulation Sandbox Mode</strong>. Values are synthesized to evaluate model thresholds and responsive visualization. Switch to <strong>Live Feed Mode</strong> above to stream from <code>api.prahari.space</code>.
+          </p>
+        </div>
+
+        <!-- Simulation Controls Bar (Shown in Sim Mode) -->
+        <div id="simControlsCard" class="dashboard-controls-card" style="display: none;">
+          <div class="controls-left">
+            <div class="time-block">
+              <span class="time-label">SIMULATED TIME (IST)</span>
+              <span id="simTimeDisplay" class="time-value">2026-10-24 16:21:52</span>
+            </div>
+          </div>
+
+          <div class="controls-center">
+            <span class="controls-title">SCENARIO PRESETS:</span>
+            <div class="scenario-btn-group" role="group" aria-label="Simulation Scenario Presets">
+              <button type="button" class="btn-scenario active" data-scenario="baseline">
+                ☀️ <span>Dry Baseline</span>
+              </button>
+              <button type="button" class="btn-scenario" data-scenario="moderate">
+                🌧️ <span>Moderate Rain</span>
+              </button>
+              <button type="button" class="btn-scenario" data-scenario="threshold60">
+                ⛈️ <span>60% Advisory</span>
+              </button>
+              <button type="button" class="btn-scenario" data-scenario="threshold85">
+                ⛰️ <span>85% Critical</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-right">
+            <button id="resetSimBtn" class="btn btn-sm btn-ghost" title="Reset to default values">
+              &#8635; Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Sliders Drawer (Available in Sim Mode) -->
+        <details id="manualTuningPanel" class="manual-tuning-panel" style="display: none;">
+          <summary class="tuning-summary">
+            <span>&#9881; Open Manual Sensor Sliders (Hackathon Evaluator Sandbox)</span>
+            <span class="tuning-hint">Adjust individual simulated parameters to test the proposed scoring logic</span>
+          </summary>
+          <div class="tuning-grid">
+            <div class="slider-control">
+              <div class="slider-header">
+                <label for="sliderRainfall">Rainfall Rate:</label>
+                <span id="valRainfall" class="slider-val">12 mm/h</span>
+              </div>
+              <input type="range" id="sliderRainfall" min="0" max="100" step="1" value="12" />
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <label for="sliderMoisture">Soil Moisture %:</label>
+                <span id="valMoisture" class="slider-val">52 %</span>
+              </div>
+              <input type="range" id="sliderMoisture" min="10" max="100" step="1" value="52" />
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <label for="sliderTilt">Tilt Delta (Pitch/Roll):</label>
+                <span id="valTilt" class="slider-val">0.24 °</span>
+              </div>
+              <input type="range" id="sliderTilt" min="0.0" max="5.0" step="0.05" value="0.24" />
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <label for="sliderVibration">Vibration Peak:</label>
+                <span id="valVibration" class="slider-val">28 mg</span>
+              </div>
+              <input type="range" id="sliderVibration" min="5" max="250" step="5" value="28" />
+            </div>
+          </div>
+        </details>
+
+        <!-- HIGH RISK ALARM BANNER (Active when Risk >= 67% or 85%) -->
+        <div id="riskAlarmBanner" class="alarm-banner" style="display: none;">
+          <div class="alarm-icon">🚨</div>
+          <div class="alarm-text">
+            <h4>ELEVATED LANDSLIDE RISK DETECTED ON MONITORED SLOPE</h4>
+            <p id="alarmSubtext">Current sensor metrics have breached elevated review thresholds. Local inspection recommended.</p>
+          </div>
+          <div class="alarm-badge">REVIEW THRESHOLD BREACH</div>
+        </div>
+
+        <!-- MAIN DASHBOARD HERO GRID: LARGE RISK BANNER & SUMMARY -->
+        <div class="prahari-banner-card" id="bannerCard">
+          <div class="banner-top">
+            <div class="banner-score-box">
+              <div class="banner-score-val" id="bannerRiskScore">--<span class="banner-score-pct">%</span></div>
+              <div class="banner-score-label" id="bannerRiskLabel">AI RISK SCORE</div>
+            </div>
+
+            <div class="banner-meta-box">
+              <div class="banner-tier-chip" id="bannerTierChip">INITIALIZING FEED</div>
+              <h2 class="banner-condition-title" id="bannerConditionTitle">Connecting to Telemetry Stream...</h2>
+              <div class="banner-condition-desc" id="bannerConditionDesc">
+                Last reading: <span id="bannerLastTime">--:--:--</span> &bull; 
+                <span id="bannerTotalCount">0</span> readings loaded &bull; 
+                <span id="bannerConfidenceText">AI confidence: --%</span>
+              </div>
+            </div>
+
+            <div class="banner-badge-box">
+              <div class="prahari-brand-badge">
+                <span class="iic-tag">&lt;HYPNEXIS&gt;</span>
+                <span class="wayanad-tag">WAYANAD SLOPE MONITOR</span>
+              </div>
+              <div class="alarm-siren-indicator" id="sirenIndicator" style="display: none;">🚨 CRITICAL STATE</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 CORE SENSOR TELEMETRY CARDS -->
+        <div class="sensor-cards-grid">
+          <!-- Card 1: Soil Moisture 1 -->
+          <div class="sensor-card" id="cardMoisture1">
+            <div class="card-icon-top">💧</div>
+            <div class="card-metric-label">SOIL MOISTURE 1</div>
+            <div class="card-metric-val" id="metricMoisture1">--</div>
+            <div class="card-metric-sub">
+              <span>% saturation</span>
+              <span class="card-sensor-tag">Depth S1</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Soil Moisture 2 -->
+          <div class="sensor-card" id="cardMoisture2">
+            <div class="card-icon-top">💧</div>
+            <div class="card-metric-label">SOIL MOISTURE 2</div>
+            <div class="card-metric-val" id="metricMoisture2">--</div>
+            <div class="card-metric-sub">
+              <span>% saturation</span>
+              <span class="card-sensor-tag">Depth S2</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Vibration / Net Accel Mag -->
+          <div class="sensor-card" id="cardVibration">
+            <div class="card-icon-top">📐</div>
+            <div class="card-metric-label">VIBRATION</div>
+            <div class="card-metric-val" id="metricVibration">--</div>
+            <div class="card-metric-sub">
+              <span>m/s² | ADXL345</span>
+              <span class="card-sensor-tag">|a - 9.81|</span>
+            </div>
+          </div>
+
+          <!-- Card 4: 3-Axis Tilt & Acceleration -->
+          <div class="sensor-card card-accel" id="cardTilt">
+            <div class="card-icon-top">↔️</div>
+            <div class="card-metric-label">TILT / ACCEL (3-AXIS)</div>
+            <div class="accel-values-stack" id="metricAccelStack">
+              <div>X: <strong id="valAccelX">--</strong></div>
+              <div>Y: <strong id="valAccelY">--</strong></div>
+              <div>Z: <strong id="valAccelZ">--</strong></div>
+            </div>
+            <div class="card-metric-sub">
+              <span>m/s² (Earth Frame)</span>
+              <span class="card-sensor-tag">ADXL345</span>
+            </div>
+          </div>
+
+          <!-- Card 5: Rain Sensor -->
+          <div class="sensor-card" id="cardRain">
+            <div class="card-icon-top">🌧️</div>
+            <div class="card-metric-label">RAIN SENSOR</div>
+            <div class="card-metric-val" id="metricRainState">--</div>
+            <div class="card-metric-sub">
+              <span id="metricRainSub">surface state</span>
+              <span class="card-sensor-tag">Optical / Tipping</span>
+            </div>
+          </div>
+
+          <!-- Card 6: Microphone -->
+          <div class="sensor-card" id="cardHumidity">
+            <div class="card-icon-top">🎙️</div>
+            <div class="card-metric-label">MICROPHONE ACTIVITY</div>
+            <div class="card-metric-val" id="metricMic">--</div>
+            <div class="card-metric-sub">
+              <span id="metricMicSub">dBFS estimate · frequency unavailable</span>
+              <span class="card-sensor-tag">MAX9814</span>
+            </div>
+          </div>
+
+          <!-- Card 7: GPS -->
+          <div class="sensor-card" id="cardTemp">
+            <div class="card-icon-top">📍</div>
+            <div class="card-metric-label">GPS POSITION</div>
+            <div class="card-metric-val" id="metricGps">NO FIX</div>
+            <div class="card-metric-sub">
+              <span id="metricGpsSub">Waiting for coordinates</span>
+              <span class="card-sensor-tag">NEO-6M</span>
+            </div>
+          </div>
+
+          <!-- Card 8: Connectivity -->
+          <div class="sensor-card" id="cardPressure">
+            <div class="card-icon-top">📡</div>
+            <div class="card-metric-label">CONNECTIVITY</div>
+            <div class="card-metric-val" id="metricConnectivity">--</div>
+            <div class="card-metric-sub">
+              <span id="metricConnectivitySub">Wi-Fi / SIM status</span>
+              <span class="card-sensor-tag">ESP32 + SIM800L</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE LIVE TREND CHART -->
+        <div class="dash-card history-chart-card">
+          <div class="chart-header-flex">
+            <div>
+              <h3 class="dash-card-title">
+                LIVE TELEMETRY TREND &bull; <span id="activeChartTitle">Risk Score (%)</span>
+              </h3>
+              <p class="card-subtitle">Real-time rolling observation window showing up to the last 40 telemetry samples.</p>
+            </div>
+
+            <!-- Metric Filter Tabs -->
+            <div class="chart-metric-tabs" role="tablist" aria-label="Chart Display Metric">
+              <button type="button" class="btn-chart-tab active" data-metric="risk">
+                <span class="tab-dot vermillion"></span> Risk Score
+              </button>
+              <button type="button" class="btn-chart-tab" data-metric="moisture">
+                <span class="tab-dot teal"></span> Soil Moisture
+              </button>
+              <button type="button" class="btn-chart-tab" data-metric="vibration">
+                <span class="tab-dot amber"></span> Vibration (x100)
+              </button>
+              <button type="button" class="btn-chart-tab" data-metric="pressure">
+                <span class="tab-dot purple"></span> Pressure
+              </button>
+            </div>
+          </div>
+
+          <div class="canvas-chart-wrapper">
+            <canvas id="slopeTrendCanvas" width="960" height="260" aria-label="Telemetry Trend Chart"></canvas>
+            <div class="chart-threshold-legend" id="chartThresholdLegend">
+              <span class="thresh-line low">-- 34% (Stable/Low)</span>
+              <span class="thresh-line med">-- 67% (Elevated/Review)</span>
+            </div>
+          </div>
+          
+          <div class="chart-footer-notice">
+            <span id="chartFooterText">Connected to https://api.prahari.space &bull; Updating every 3000ms</span>
+          </div>
+        </div>
+
+        <!-- SENSOR LOG TABLE -->
+        <div class="dash-card sensor-log-card">
+          <div class="log-header-flex">
+            <div class="log-title-group">
+              <h3 class="dash-card-title">HISTORICAL SENSOR TELEMETRY LOG</h3>
+              <span class="log-count-pill" id="logCountPill">0 readings loaded</span>
+            </div>
+            <div class="log-actions">
+              <button id="clearLogBtn" class="btn btn-sm btn-ghost">Clear Buffer</button>
+              <button id="exportCsvBtn" class="btn btn-sm btn-teal-outline">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="table-responsive-wrapper">
+            <table class="sensor-log-table" id="sensorLogTable">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>AI Probability</th>
+                  <th>S1 (%) / ADC</th>
+                  <th>S2 (%) / ADC</th>
+                  <th>Rain</th>
+                  <th>Vibration /10</th>
+                  <th>Tilt P/R</th>
+                  <th>Mic dBFS</th>
+                  <th>Mic Hz*</th>
+                  <th>GPS</th>
+                  <th>Wi-Fi RSSI</th>
+                  <th>SIM Signal</th>
+                </tr>
+              </thead>
+              <tbody id="sensorLogTbody">
+                <tr>
+                  <td colspan="12" class="empty-log-cell">
+                    Connecting to backend at <code id="emptyTableEndpoint">https://api.prahari.space</code>...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- BACKEND ARCHITECTURE INFO CALLOUT -->
+        <div class="backend-info-banner">
+          <div class="info-icon">📡</div>
+          <div class="info-body">
+            <strong>PRAHARI — Wayanad Telemetry Stream Architecture</strong>
+            <p id="backendStatusDesc">
+              Connected to <code>https://api.prahari.space</code>. The dashboard polls <code>/api/latest</code> and <code>/api/history?limit=40</code> for ESP32 JSON telemetry. AI probability is shown only when returned by a configured prediction backend.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION: SENSOR ARCHITECTURE -->
+    <section class="section section-architecture" id="architecture">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">HARDWARE SPECIFICATION</span>
+          <h2 class="section-title">Proposed Edge Sensor Node Architecture</h2>
+          <p class="section-description">
+            A rugged, off-grid IoT node engineered with accessible, low-power components to ensure hillside durability, battery longevity, and continuous multi-modal telemetry.
+          </p>
+        </div>
+
+        <!-- APPLE-STYLE SCROLLYTELLING SHOWCASE -->
+        <div class="apple-scrolly-section" id="scrollyShowcase">
+          <!-- Sticky Viewport Window -->
+          <div class="scrolly-sticky-window">
+            
+            <!-- Background Image Layers (Cross-fading with parallax scale) -->
+            <div class="scrolly-bg-container">
+              <div class="scrolly-bg-layer active" id="scrollyBg0" style="background-image: url('./images/slide1-slope.jpg');"></div>
+              <div class="scrolly-bg-layer" id="scrollyBg1" style="background-image: url('./images/slide2-node.jpg');"></div>
+              <div class="scrolly-bg-layer" id="scrollyBg2" style="background-image: url('./images/slide3-soil.jpg');"></div>
+              <div class="scrolly-bg-layer" id="scrollyBg3" style="background-image: url('./images/slide4-motion.jpg');"></div>
+              <div class="scrolly-backdrop-vignette"></div>
+            </div>
+
+            <!-- Apple-style Floating Scrubber Navigation Dock -->
+            <div class="scrolly-nav-dock">
+              <div class="scrolly-progress-track">
+                <div class="scrolly-progress-bar" id="scrollyProgressBar"></div>
+              </div>
+              <div class="scrolly-dock-items">
+                <button class="scrolly-dock-btn active" data-target-step="0">
+                  <span class="dock-num">01</span>
+                  <span class="dock-label">Terrain Profile</span>
+                </button>
+                <button class="scrolly-dock-btn" data-target-step="1">
+                  <span class="dock-num">02</span>
+                  <span class="dock-label">Edge Sentinel</span>
+                </button>
+                <button class="scrolly-dock-btn" data-target-step="2">
+                  <span class="dock-num">03</span>
+                  <span class="dock-label">Soil Infiltration</span>
+                </button>
+                <button class="scrolly-dock-btn" data-target-step="3">
+                  <span class="dock-num">04</span>
+                  <span class="dock-label">Motion Telemetry</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Interactive HUD Telemetry Badge (Overlaid on the image) -->
+            <div class="scrolly-hud-box">
+              <div class="hud-header">
+                <span class="hud-pulse"></span>
+                <span class="hud-title" id="scrollyHudTitle">STATION: CHOORALMALA RIDGE &bull; 11.55&deg;N 76.12&deg;E</span>
+              </div>
+              <div class="hud-metrics-row" id="scrollyHudMetrics">
+                <div class="hud-metric">
+                  <span class="hud-k">SLOPE ANGLE</span>
+                  <span class="hud-v" id="hudSlopeAngle">42.5&deg;</span>
+                </div>
+                <div class="hud-metric">
+                  <span class="hud-k">GEOLOGY</span>
+                  <span class="hud-v" id="hudGeology">Lateritic Soil / Gneiss</span>
+                </div>
+                <div class="hud-metric">
+                  <span class="hud-k">SYSTEM STATE</span>
+                  <span class="hud-v accent" id="hudState">ACTIVE SAMPLING</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating Stage Content Cards (Cross-fade & Slide) -->
+            <div class="scrolly-stage-content">
+              <!-- Slide 0 -->
+              <div class="scrolly-card active" id="scrollyCard0">
+                <div class="scrolly-card-eyebrow">
+                  <span class="badge badge-vermillion">01 / TERRAIN VULNERABILITY</span>
+                  <span class="card-step-indicator">STAGE 1 OF 4</span>
+                </div>
+                <h3 class="scrolly-card-title">The Exposed Ridge &bull; Fragile Western Ghats</h3>
+                <p class="scrolly-card-desc">
+                  In Wayanad's steep mountain tracts, heavy monsoonal precipitation rapidly supersaturates thin topsoil layers resting on steep, impermeable metamorphic bedrock. Traditional district weather radar tells you rain is falling, but only localized slope telemetry can detect when water begins trapped in the shear zone.
+                </p>
+                <div class="scrolly-card-specs">
+                  <div class="spec-tag">Altitude: 920m ASL</div>
+                  <div class="spec-tag">Critical Incline: &gt; 35&deg;</div>
+                  <div class="spec-tag">Pore Saturation Risk: High</div>
+                </div>
+                <div class="scrolly-scroll-hint">
+                  <span>Scroll down to inspect the Edge Sentinel</span> &darr;
+                </div>
+              </div>
+
+              <!-- Slide 1 -->
+              <div class="scrolly-card" id="scrollyCard1">
+                <div class="scrolly-card-eyebrow">
+                  <span class="badge badge-teal">02 / THE EDGE SENTINEL</span>
+                  <span class="card-step-indicator">STAGE 2 OF 4</span>
+                </div>
+                <h3 class="scrolly-card-title">Off-Grid ESP32 Architecture</h3>
+                <p class="scrolly-card-desc">
+                  Anchored directly on high-risk terrain without relying on mains electricity or cellular towers. A dual-core 32-bit Xtensa MCU samples all geotechnical channels, applies median noise filtration, and operates for 72+ continuous hours of heavy overcast via a 10W monocrystalline solar panel and 6000mAh LiFePO4 battery pack.
+                </p>
+                <div class="scrolly-card-specs">
+                  <div class="spec-tag">Deep Sleep: ~15 &micro;A</div>
+                  <div class="spec-tag">LiFePO4 Storage: 3.2V 6Ah</div>
+                  <div class="spec-tag">Telemetry: LoRa / Mesh</div>
+                </div>
+                <div class="scrolly-scroll-hint">
+                  <span>Scroll down to explore Subsurface Soil Sensing</span> &darr;
+                </div>
+              </div>
+
+              <!-- Slide 2 -->
+              <div class="scrolly-card" id="scrollyCard2">
+                <div class="scrolly-card-eyebrow">
+                  <span class="badge badge-teal">03 / SUBSURFACE HYDROLOGY</span>
+                  <span class="card-step-indicator">STAGE 3 OF 4</span>
+                </div>
+                <h3 class="scrolly-card-title">Dual-Depth Pore-Water Infiltration</h3>
+                <p class="scrolly-card-desc">
+                  Surface soil drains and dries rapidly in tropical heat, but deep subterranean saturation is what triggers slope shear failure. PRAHARI deploys dual corrosion-resistant capacitive probes buried at 30 cm (S1) and 80 cm (S2) to monitor the downward hydraulic wetting front and pore-water pressure spikes in real time.
+                </p>
+                <div class="scrolly-card-specs">
+                  <div class="spec-tag">Probe S1: 30 cm Influx</div>
+                  <div class="spec-tag">Probe S2: 80 cm Slip Plane</div>
+                  <div class="spec-tag">Output: Dielectric % VWC</div>
+                </div>
+                <div class="scrolly-scroll-hint">
+                  <span>Scroll down to examine Motion &amp; Vibration Telemetry</span> &darr;
+                </div>
+              </div>
+
+              <!-- Slide 3 -->
+              <div class="scrolly-card" id="scrollyCard3">
+                <div class="scrolly-card-eyebrow">
+                  <span class="badge badge-vermillion">04 / SHEAR DISPLACEMENT</span>
+                  <span class="card-step-indicator">STAGE 4 OF 4</span>
+                </div>
+                <h3 class="scrolly-card-title">Micro-Radian Angular &amp; Tremor Telemetry</h3>
+                <p class="scrolly-card-desc">
+                  Rigidly coupled to an anchored slope datum, the ADXL345 3-axis accelerometer tracks sub-degree gravitational tilt deviations (&Delta;pitch and &Delta;roll) caused by plastic soil creep, while simultaneously capturing high-frequency micro-tremors from fracturing rock strata before macroscopic slope rupture occurs.
+                </p>
+                <div class="scrolly-card-specs">
+                  <div class="spec-tag">Sensitivity: 3.9 mg/LSB</div>
+                  <div class="spec-tag">Angular Resolution: &lt; 0.05&deg;</div>
+                  <div class="spec-tag">Model: Random Forest Voting</div>
+                </div>
+                <div class="scrolly-scroll-hint">
+                  <span>Scroll down to inspect Component Specifications</span> &darr;
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 4 Virtual Scroll Anchors for the 400vh Height -->
+          <div class="scrolly-trigger-zone">
+            <div class="scrolly-step-trigger" data-step-index="0"></div>
+            <div class="scrolly-step-trigger" data-step-index="1"></div>
+            <div class="scrolly-step-trigger" data-step-index="2"></div>
+            <div class="scrolly-step-trigger" data-step-index="3"></div>
+          </div>
+        </div>
+
+        <!-- Architecture Components Grid -->
+        <div class="hardware-grid">
+          <!-- ESP32 Controller -->
+          <div class="hw-card">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"></path></svg>
+            </div>
+            <span class="hw-tag">CORE MICROCONTROLLER</span>
+            <h3>ESP32 Dual-Core MCU</h3>
+            <p>
+              Dual-core 32-bit Xtensa LX6 @ 240MHz with ultra-low-power co-processor. Supports deep sleep states (~15 &micro;A), integrated ADC channels, I2C/SPI interfaces, and proposed long-range radio / LoRa telemetry.
+            </p>
+            <div class="hw-specs">
+              <span>Operating Voltage: 3.3V DC</span>
+              <span>Sleep Current: &lt; 20 &micro;A</span>
+              <span>Role: Edge sampling &amp; packet framing</span>
+            </div>
+          </div>
+
+          <!-- ADXL345 -->
+          <div class="hw-card">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg>
+            </div>
+            <span class="hw-tag">INCLINOMETER &amp; VIBRATION</span>
+            <h3>ADXL345 3-Axis Accelerometer</h3>
+            <p>
+              High-resolution (13-bit) measurement up to &plusmn;16g. Mounted rigidly on an anchored slope datum to measure static gravitational tilt changes (&lt;0.1&deg;) and high-frequency tremor bursts from internal shear movement.
+            </p>
+            <div class="hw-specs">
+              <span>Bus Interface: I2C (0x53)</span>
+              <span>Resolution: ~3.9 mg/LSB</span>
+              <span>Role: Slope creep &amp; slip detection</span>
+            </div>
+          </div>
+
+          <!-- Soil Moisture Dual Probes -->
+          <div class="hw-card">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+            </div>
+            <span class="hw-tag">SUB-SURFACE HYDROLOGY</span>
+            <h3>Dual Capacitive Soil Moisture Probes</h3>
+            <p>
+              Corrosion-resistant capacitive dielectric probes installed at two distinct slip depths (S1 at 30 cm and S2 at 80 cm) to observe pore-water infiltration gradients and shear planes without electrode electrolysis.
+            </p>
+            <div class="hw-specs">
+              <span>Output: Dual ADC Channels</span>
+              <span>Coating: Waterproof Epoxy &amp; PCB FR4</span>
+              <span>Role: Pore-water saturation gradients</span>
+            </div>
+          </div>
+
+          <!-- Rainfall Sensor -->
+          <div class="hw-card">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path><path d="M8 19v2M8 13v2M12 21v2M12 15v2M16 19v2M16 13v2"></path></svg>
+            </div>
+            <span class="hw-tag">LOCAL PRECIPITATION</span>
+            <h3>Tipping Bucket &amp; Rain Presence</h3>
+            <p>
+              Self-emptying dual-bucket mechanism with magnetic reed switch paired with optical surface rain detection. Generates hardware interrupts on the ESP32 per 0.2 mm of precipitation to calculate instantaneous rate and wet/dry surface state.
+            </p>
+            <div class="hw-specs">
+              <span>Resolution: 0.2 mm per tip</span>
+              <span>Signal: GPIO Hardware Interrupt</span>
+              <span>Role: Trigger factor monitoring</span>
+            </div>
+          </div>
+
+          <!-- DHT22 -->
+          <div class="hw-card">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+            </div>
+            <span class="hw-tag">SURFACE MICROCLIMATE</span>
+            <h3>DHT22 Temperature &amp; Humidity</h3>
+            <p>
+              Calibrated capacitive humidity sensing element and thermistor. Evaluates ambient vapor saturation, temperature inversion, and evapotranspiration rates to provide atmospheric context to drying cycles.
+            </p>
+            <div class="hw-specs">
+              <span>Accuracy: &plusmn;2% RH, &plusmn;0.5&deg;C</span>
+              <span>Sampling Period: 2 seconds</span>
+              <span>Role: Environmental baselining</span>
+            </div>
+          </div>
+
+          <!-- BMP180 -->
+          <div class="hw-card">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 12a4 4 0 1 1-8 0"></path><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg>
+            </div>
+            <span class="hw-tag">BAROMETRIC TRENDS</span>
+            <h3>BMP180 Barometric Air Pressure</h3>
+            <p>
+              Piezoresistive pressure sensor reading 300 to 1100 hPa. Rapid barometric pressure plummets often herald approaching localized mountain convective squalls and cloudbursts before rain strikes.
+            </p>
+            <div class="hw-specs">
+              <span>Interface: I2C (0x77)</span>
+              <span>RMS Noise: 0.02 hPa</span>
+              <span>Role: Sudden storm onset detection</span>
+            </div>
+          </div>
+
+          <!-- Solar & Battery -->
+          <div class="hw-card span-2">
+            <div class="hw-icon-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+            </div>
+            <span class="hw-tag">OFF-GRID AUTONOMY</span>
+            <h3>Solar Harvesting &amp; LiFePO4 Energy System</h3>
+            <p>
+              10W monocrystalline photovoltaic panel paired with an MPPT charge controller and a 6000 mAh Lithium Iron Phosphate (LiFePO4) cell pack. Engineered to deliver 72+ hours of autonomous operation during continuous monsoon overcast, with thermal resilience across mountain freezing and summer heat.
+            </p>
+            <div class="hw-specs-row">
+              <div class="spec-pill">PV Panel: 10W / 6V Monocrystalline</div>
+              <div class="spec-pill">Storage: 3.2V 6000mAh LiFePO4</div>
+              <div class="spec-pill">Autonomy: 72+ hours overcast</div>
+              <div class="spec-pill">Enclosure: IP66 Weatherproof Polycarbonate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: PROPOSED DATA FLOW -->
+    <section class="section section-pipeline" id="pipeline">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">DATA ARCHITECTURE</span>
+          <h2 class="section-title">Sense &rarr; Assess &rarr; Communicate</h2>
+          <p class="section-description">
+            A three-stage data pipeline designed for bandwidth efficiency, edge resilience, and village-level accessibility.
+          </p>
+        </div>
+
+        <div class="pipeline-flow-container">
+          <!-- Stage 1 -->
+          <div class="pipeline-stage-card">
+            <div class="stage-number">01</div>
+            <div class="stage-header">
+              <div class="stage-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
+              </div>
+              <span class="stage-tag">EDGE SAMPLING</span>
+              <h3>SENSE</h3>
+            </div>
+            <p class="stage-text">
+              The ESP32 node awakes from deep sleep every 60 seconds (or immediately upon tilt/rain interrupt). It captures synchronized readings across all sensor channels:
+            </p>
+            <ul class="stage-bullets">
+              <li>Samples accelerometer (ADXL345) for static pitch/roll and vibration energy.</li>
+              <li>Reads dual capacitive probes for volumetric soil moisture (S1 &amp; S2).</li>
+              <li>Polls tipping bucket count, BMP180 barometric delta, and DHT22 climate metrics.</li>
+              <li>Applies edge-level median filtering to discard mechanical sensor noise.</li>
+            </ul>
+            <div class="stage-foot">Output: Compact telemetry packet posted to /data</div>
+          </div>
+
+          <!-- Flow Connector Arrow -->
+          <div class="pipeline-arrow" aria-hidden="true">&rarr;</div>
+
+          <!-- Stage 2 -->
+          <div class="pipeline-stage-card">
+            <div class="stage-number">02</div>
+            <div class="stage-header">
+              <div class="stage-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+              </div>
+              <span class="stage-tag">EVALUATION ENGINE</span>
+              <h3>ASSESS</h3>
+            </div>
+            <p class="stage-text">
+              The backend at <code>api.prahari.space</code> runs the proposed Random Forest scoring algorithm to combine multi-dimensional slope parameters:
+            </p>
+            <ul class="stage-bullets">
+              <li>Cross-references cumulative rainfall against soil moisture saturation curves.</li>
+              <li>Checks rate-of-change on tilt angles (&Delta;tilt/&Delta;time) to identify plastic creep.</li>
+              <li>Ingests regional IMD / SDMA advisory status to weigh background meteorological risk.</li>
+              <li>Outputs a normalized 0–100 composite risk score with confidence intervals.</li>
+            </ul>
+            <div class="stage-foot">Output: Proposed 0–100 Risk Score &amp; Tier</div>
+          </div>
+
+          <!-- Flow Connector Arrow -->
+          <div class="pipeline-arrow" aria-hidden="true">&rarr;</div>
+
+          <!-- Stage 3 -->
+          <div class="pipeline-stage-card">
+            <div class="stage-number">03</div>
+            <div class="stage-header">
+              <div class="stage-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+              </div>
+              <span class="stage-tag">COMMUNITY READINESS</span>
+              <h3>COMMUNICATE</h3>
+            </div>
+            <p class="stage-text">
+              Information is delivered in simple, actionable formats to local stakeholders without requiring complex technical interpretation:
+            </p>
+            <ul class="stage-bullets">
+              <li>Presents data on a low-bandwidth local village dashboard (like this one and prahari.space).</li>
+              <li>Flags initial review states (60% Advisory / 85% Critical Review) for village volunteers.</li>
+              <li>Prompts local disaster committees to inspect drainage channels and road culverts.</li>
+              <li>Logs verifiable telemetry for post-monsoon geotechnical calibration.</li>
+            </ul>
+            <div class="stage-foot">Output: Local Preparedness Awareness</div>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE 3D FOLDING DATA STRUCTURE SHOWCASE -->
+        <div class="data-structure-folding-section" id="dataStructureFolding">
+          <div class="folding-section-header">
+            <div class="folding-header-info">
+              <span class="sub-tag">INTERACTIVE 3D ARCHITECTURE</span>
+              <h3>Under the Hood: The 3D Folding Telemetry Architecture</h3>
+              <p>Explore how raw ESP32 byteframes fold into multi-variable ML tensors and unfold into community village alerts.</p>
+            </div>
+            <div class="folding-controls">
+              <button class="btn btn-sm btn-teal-outline" id="btnToggleAllFolds" title="Toggle 3D fold state">
+                <span class="btn-icon">📖</span> <span id="toggleFoldsText">Unfold All Panels</span>
+              </button>
+              <div class="folding-tab-buttons">
+                <button class="fold-tab-btn active" data-fold-target="0">01: ESP32 Binary Struct</button>
+                <button class="fold-tab-btn" data-fold-target="1">02: ML Input Tensor</button>
+                <button class="fold-tab-btn" data-fold-target="2">03: Village JSON Alert</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D Origami Trifold Container -->
+          <div class="folding-origami-container">
+            <div class="folding-trifold-wrapper" id="foldingWrapper">
+              
+              <!-- PANEL 1 (LEFT FOLD): Hardware Struct -->
+              <div class="folding-panel panel-left active" id="foldPanel0">
+                <div class="fold-crease fold-crease-right"></div>
+                <div class="panel-inner">
+                  <div class="panel-header">
+                    <div class="panel-tag">STAGE 01 &bull; HARDWARE FIRMWARE</div>
+                    <h4>ESP32 Binary Struct (C/C++)</h4>
+                    <span class="panel-badge">sizeof = 32 Bytes</span>
+                  </div>
+                  <p class="panel-summary">
+                    Packed fixed-width struct transmitted over LoRa/SPI. Maximizes radio battery lifetime by avoiding verbose JSON at the physical node.
+                  </p>
+                  <div class="code-box">
+                    <pre><code><span class="c-keyword">typedef struct</span> __attribute__((packed)) {
+  <span class="c-type">uint16_t</span> magic_header;   <span class="c-comment">// 0xAA55 (Sync Frame)</span>
+  <span class="c-type">uint32_t</span> timestamp_sec;  <span class="c-comment">// Epoch GPS/NTP</span>
+  <span class="c-type">int16_t</span>  accel_x_mg;     <span class="c-comment">// ADXL345 Tilt X</span>
+  <span class="c-type">int16_t</span>  accel_y_mg;     <span class="c-comment">// ADXL345 Tilt Y</span>
+  <span class="c-type">int16_t</span>  accel_z_mg;     <span class="c-comment">// ADXL345 Vibration</span>
+  <span class="c-type">uint16_t</span> soil_vwc_s1;    <span class="c-comment">// Topsoil Probe (30cm)</span>
+  <span class="c-type">uint16_t</span> soil_vwc_s2;    <span class="c-comment">// Deep Bedrock (80cm)</span>
+  <span class="c-type">uint16_t</span> rain_pulse_cnt; <span class="c-comment">// Tipping Bucket 0.2mm</span>
+  <span class="c-type">int16_t</span>  temp_centic;    <span class="c-comment">// DHT22 x100 (&deg;C)</span>
+  <span class="c-type">uint8_t</span>  humidity_pct;   <span class="c-comment">// Relative Humidity</span>
+  <span class="c-type">uint32_t</span> pressure_pa;    <span class="c-comment">// BMP180 Barometric</span>
+  <span class="c-type">uint16_t</span> crc16_checksum; <span class="c-comment">// CRC-CCITT Integrity</span>
+} <span class="c-type">prahari_packet_t</span>;</code></pre>
+                  </div>
+                  <div class="panel-footer-meta">
+                    <span class="panel-meta-item">TX Interval: <strong>60s Sleep</strong></span>
+                    <span class="panel-meta-item">Airtime: <strong>~48 ms @ SF7</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PANEL 2 (CENTER FOLD): ML Geotechnical Tensor -->
+              <div class="folding-panel panel-center active" id="foldPanel1">
+                <div class="fold-crease fold-crease-left"></div>
+                <div class="fold-crease fold-crease-right"></div>
+                <div class="panel-inner">
+                  <div class="panel-header">
+                    <div class="panel-tag">STAGE 02 &bull; EDGE EVALUATION</div>
+                    <h4>ML Geotechnical Input Vector</h4>
+                    <span class="panel-badge">Tensor Shape: [1, 5]</span>
+                  </div>
+                  <p class="panel-summary">
+                    Synthesized non-linear feature array ingested into the 100-tree Random Forest classifier to compute localized failure probability.
+                  </p>
+                  <div class="code-box">
+                    <pre><code><span class="c-comment">// Geotechnical Feature Vector normalized to [0.0 - 1.0]</span>
+<span class="c-keyword">const</span> <span class="c-type">FeatureVector</span> = {
+  <span class="c-prop">pore_saturation_ratio</span> : <span class="c-num">0.824</span>, <span class="c-comment">// 35% Weight</span>
+  <span class="c-prop">cumulative_24h_rain_mm</span>: <span class="c-num">78.500</span>, <span class="c-comment">// 28% Weight</span>
+  <span class="c-prop">tilt_angular_rate_deg_h</span>: <span class="c-num">0.142</span>, <span class="c-comment">// 22% Weight</span>
+  <span class="c-prop">rms_vibration_energy_g</span>: <span class="c-num">0.038</span>, <span class="c-comment">// 10% Weight</span>
+  <span class="c-prop">barometric_rate_hpa_h</span>  : <span class="c-num">-1.80</span>  <span class="c-comment">//  5% Weight</span>
+};
+
+<span class="c-comment">// Ensemble Multi-Tree Inference Call</span>
+<span class="c-keyword">let</span> composite_risk = <span class="c-func">evaluateRandomForest</span>(FeatureVector);
+<span class="c-comment">// Output: 74.2 / 100 (Advisory Review Tier)</span></code></pre>
+                  </div>
+                  <div class="panel-footer-meta">
+                    <span class="panel-meta-item">Inference Latency: <strong>3.8 ms</strong></span>
+                    <span class="panel-meta-item">Memory: <strong>14.2 KB ROM</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PANEL 3 (RIGHT FOLD): Community JSON Dispatch -->
+              <div class="folding-panel panel-right active" id="foldPanel2">
+                <div class="fold-crease fold-crease-left"></div>
+                <div class="panel-inner">
+                  <div class="panel-header">
+                    <div class="panel-tag">STAGE 03 &bull; COMMUNITY DISPATCH</div>
+                    <h4>Village Advisory JSON Payload</h4>
+                    <span class="panel-badge">Payload = 168 Bytes</span>
+                  </div>
+                  <p class="panel-summary">
+                    Standardized lightweight JSON published to MQTT brokers and village dashboard displays for clear local stakeholder comprehension.
+                  </p>
+                  <div class="code-box">
+                    <pre><code>{
+  <span class="c-prop">"system"</span>: <span class="c-string">"PRAHARI"</span>,
+  <span class="c-prop">"node_id"</span>: <span class="c-string">"CHOORALMALA-MAST-01"</span>,
+  <span class="c-prop">"status"</span>: <span class="c-string">"ADVISORY_REVIEW"</span>,
+  <span class="c-prop">"risk_score"</span>: <span class="c-num">74.2</span>,
+  <span class="c-prop">"threshold"</span>: <span class="c-string">"&gt;= 60% UNVALIDATED"</span>,
+  <span class="c-prop">"village_advisory_en"</span>: <span class="c-string">"Inspect road culverts and natural stormwater chutes."</span>,
+  <span class="c-prop">"village_advisory_ml"</span>: <span class="c-string">"ഓടകളിലെ തടസ്സങ്ങൾ പരിശോധിച്ച് നീക്കം ചെയ്യുക."</span>,
+  <span class="c-prop">"attribution"</span>: <span class="c-string">"&lt;HYPNEXIS&gt;"</span>
+}</code></pre>
+                  </div>
+                  <div class="panel-footer-meta">
+                    <span class="panel-meta-item">QoS Level: <strong>1 (At least once)</strong></span>
+                    <span class="panel-meta-item">Protocols: <strong>HTTP REST / MQTT</strong></span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          
+          <div class="folding-tip-bar">
+            <span>💡 <strong>3D Fold Interaction:</strong> Click tabs above or press <em>"Unfold All Panels"</em> to trigger the 3D origami folding transition across firmware byteframes, ML feature tensors, and localized alerts.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: AI CONCEPT (RANDOM FOREST) -->
+    <section class="section section-ai" id="ai-model">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">MACHINE LEARNING CONCEPT</span>
+          <h2 class="section-title">Proposed Random Forest Risk Synthesis</h2>
+          <p class="section-description">
+            Why an ensemble of decision trees is proposed to model non-linear geotechnical slope interactions from multi-modal sensor inputs.
+          </p>
+        </div>
+
+        <div class="ai-overview-grid">
+          <div class="ai-text-block">
+            <h3>Why Random Forest for Landslide Risk?</h3>
+            <p>
+              Slope failure is rarely caused by a single isolated variable. For example:
+            </p>
+            <ul class="styled-list">
+              <li><strong>High Rainfall + Dry Sandy Soil:</strong> Water drains quickly; immediate risk remains low.</li>
+              <li><strong>Moderate Rainfall + 90% Saturated Soil:</strong> Pore-water pressure spikes; soil shear strength collapses.</li>
+              <li><strong>Micro-Tilt Change Alone:</strong> Could be wind buffeting or animal contact; requires corroborating moisture and vibration signals to confirm ground movement.</li>
+            </ul>
+            <p>
+              A <strong>Random Forest</strong> ensemble model handles these non-linear cross-correlations exceptionally well. By aggregating predictions across multiple decision trees trained on diverse subsets of geotechnical variables, it prevents false triggers caused by any single faulty sensor while remaining lightweight enough for edge or gateway micro-inference.
+            </p>
+          </div>
+
+          <!-- Feature Importance Visual with Dynamic Loading -->
+          <div class="ai-feature-card" id="rfFeatureCard">
+            <div class="feature-card-header">
+              <div>
+                <h4>Proposed Feature Weight Distribution</h4>
+                <p class="feature-note">
+                  Relative importance proposed for the Random Forest model (subject to geotechnical field calibration):
+                </p>
+              </div>
+              <div class="rf-model-status-badge" id="rfStatusBadge">
+                <span class="rf-status-dot pulsing" id="rfStatusDot"></span>
+                <span id="rfStatusText">Model Calibrated</span>
+              </div>
+            </div>
+
+            <!-- Recalibration Scenario Pills & Reload Button -->
+            <div class="rf-scenario-bar">
+              <span class="rf-scenario-label">CALIBRATION REGIME:</span>
+              <div class="rf-scenario-pills">
+                <button class="rf-pill-btn active" data-scenario="baseline">Balanced Baseline</button>
+                <button class="rf-pill-btn" data-scenario="monsoon">🌧️ Heavy Monsoon Influx</button>
+                <button class="rf-pill-btn" data-scenario="shear">⚡ Rapid Shear Creep</button>
+                <button class="rf-pill-btn" data-scenario="seismic">📉 Micro-Tremor Focus</button>
+              </div>
+              <button class="btn btn-xs btn-teal-outline" id="btnReloadWeights" title="Re-simulate loading and tree weight computation">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                <span>Re-load Weights</span>
+              </button>
+            </div>
+
+            <!-- Dynamic Loading Shimmer Scanline Indicator -->
+            <div class="rf-loading-indicator" id="rfLoadingIndicator">
+              <div class="rf-loading-bar-scan"></div>
+              <span class="rf-loading-label" id="rfLoadingLabel">Calibrating Random Forest feature weights across 100 decision trees...</span>
+            </div>
+
+            <div class="feature-bars-container" id="featureBarsContainer">
+              <div class="feature-bar-item" data-key="soil">
+                <div class="bar-label-row">
+                  <span class="feature-name">Soil Moisture Saturation (% VWC - S1 &amp; S2)</span>
+                  <strong class="feature-value" id="weightValSoil">35%</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" id="weightBarSoil" style="width: 35%;"></div>
+                </div>
+              </div>
+
+              <div class="feature-bar-item" data-key="rain">
+                <div class="bar-label-row">
+                  <span class="feature-name">Cumulative &amp; Rate of Rainfall (mm/h, 24h)</span>
+                  <strong class="feature-value" id="weightValRain">28%</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" id="weightBarRain" style="width: 28%;"></div>
+                </div>
+              </div>
+
+              <div class="feature-bar-item" data-key="tilt">
+                <div class="bar-label-row">
+                  <span class="feature-name">Inclinometer Tilt Angular Velocity (&deg;/h)</span>
+                  <strong class="feature-value" id="weightValTilt">22%</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" id="weightBarTilt" style="width: 22%;"></div>
+                </div>
+              </div>
+
+              <div class="feature-bar-item" data-key="vibration">
+                <div class="bar-label-row">
+                  <span class="feature-name">Ground Vibration / High-Frequency Tremor</span>
+                  <strong class="feature-value" id="weightValVib">10%</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" id="weightBarVib" style="width: 10%;"></div>
+                </div>
+              </div>
+
+              <div class="feature-bar-item" data-key="atmospheric">
+                <div class="bar-label-row">
+                  <span class="feature-name">Atmospheric Conditions (Temp, Humidity, &Delta;Pressure)</span>
+                  <strong class="feature-value" id="weightValAtm">5%</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" id="weightBarAtm" style="width: 5%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-footer">
+              <div class="feature-footer-stats">
+                <span>Model: <strong>RandomForestClassifier</strong> (n_estimators=100)</span>
+                <span>Criterion: <strong>Gini Impurity</strong></span>
+                <span>Edge Latency: <strong>&lt; 4.2 ms on ESP32</strong></span>
+              </div>
+              <span class="sim-note">PROPOSED CONCEPTUAL WEIGHTINGS ONLY &bull; UNVALIDATED FIELD PROPOSAL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ensemble Tree Concept Graphic -->
+        <div class="ensemble-graphic-card">
+          <h4 class="text-center">How the Proposed Ensemble Evaluates Multi-Sensor Inputs</h4>
+          <div class="ensemble-steps-grid">
+            <div class="tree-card">
+              <div class="tree-badge">Tree Subset A</div>
+              <h5>Hydrological Focus</h5>
+              <p>Evaluates cumulative rain vs soil drainage capacity and pore pressure build-up.</p>
+              <div class="tree-vote">Vote: Risk Factor Weight</div>
+            </div>
+
+            <div class="tree-card">
+              <div class="tree-badge">Tree Subset B</div>
+              <h5>Geomechanical Focus</h5>
+              <p>Evaluates accelerometer static tilt angles (&Delta;&theta;) and high-frequency tremor spikes.</p>
+              <div class="tree-vote">Vote: Creep Displacement</div>
+            </div>
+
+            <div class="tree-card">
+              <div class="tree-badge">Tree Subset C</div>
+              <h5>Atmospheric Storm Focus</h5>
+              <p>Correlates barometric pressure collapse with sudden precipitation bursts and humidity.</p>
+              <div class="tree-vote">Vote: Storm Influx Severity</div>
+            </div>
+
+            <div class="tree-card highlight-tree">
+              <div class="tree-badge accent">Ensemble Consensus</div>
+              <h5>Random Forest Score</h5>
+              <p>Averages individual tree predictions to generate an interpretable <strong>0–100 composite risk score</strong>.</p>
+              <div class="tree-vote-final">Result: 0–100 Output</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: INITIAL REVIEW THRESHOLDS & CALIBRATION -->
+    <section class="section section-thresholds" id="thresholds">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">CALIBRATION &amp; PROTOCOL</span>
+          <h2 class="section-title">Proposed Initial Review Thresholds</h2>
+          <p class="section-description">
+            PRAHARI introduces a dual-tier review threshold logic for community preparedness. Crucially, these are <strong>unvalidated initial baselines</strong> that require site-specific local field calibration.
+          </p>
+        </div>
+
+        <!-- Threshold Cards -->
+        <div class="threshold-cards-grid">
+          <!-- Threshold 60% -->
+          <div class="threshold-card thresh-60">
+            <div class="thresh-header">
+              <div class="thresh-pill-label">TIER 1 REVIEW</div>
+              <div class="thresh-number">60%</div>
+              <h3>Elevated Awareness Threshold</h3>
+            </div>
+            <div class="thresh-body">
+              <p class="thresh-desc">
+                Proposed trigger when sustained rainfall combined with rising soil saturation passes preliminary stability thresholds.
+              </p>
+              <div class="thresh-actions">
+                <strong>Proposed Preparedness Steps:</strong>
+                <ul>
+                  <li>Local disaster committee members check drainage paths &amp; debris basins.</li>
+                  <li>Verify latest regional IMD radar &amp; SDMA meteorological bulletins.</li>
+                  <li>Node telemetry transmission frequency increases from 15 min to 2 min.</li>
+                  <li>Community focal points confirm communication channels with village elders.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="thresh-foot">
+              <span class="status-chip chip-amber">UNVALIDATED PROPOSAL</span>
+            </div>
+          </div>
+
+          <!-- Threshold 85% -->
+          <div class="threshold-card thresh-85">
+            <div class="thresh-header">
+              <div class="thresh-pill-label">TIER 2 REVIEW</div>
+              <div class="thresh-number">85%</div>
+              <h3>Critical Technical Review Threshold</h3>
+            </div>
+            <div class="thresh-body">
+              <p class="thresh-desc">
+                Proposed trigger when extreme soil saturation occurs concurrently with detected micro-tilt displacement or anomalous vibration spikes.
+              </p>
+              <div class="thresh-actions">
+                <strong>Proposed Preparedness Steps:</strong>
+                <ul>
+                  <li>Flag urgent technical inspection condition for local disaster committee.</li>
+                  <li>Direct visual verification of hillside cracks and tension scarps by trained volunteers.</li>
+                  <li>Consult official district disaster administration for official instructions.</li>
+                  <li>Prepare standby shelter kits in accordance with standard village safety protocols.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="thresh-foot">
+              <span class="status-chip chip-vermillion">UNVALIDATED PROPOSAL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MANDATORY CALIBRATION STATEMENT CALLOUT -->
+        <div class="calibration-callout-box">
+          <div class="callout-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M22 12A10 10 0 1 1 2 12a10 10 0 0 1 20 0z"></path></svg>
+          </div>
+          <div class="callout-text">
+            <h4>MANDATORY NOTICE: LOCAL FIELD CALIBRATION IS REQUIRED</h4>
+            <p>
+              The <strong>60%</strong> and <strong>85%</strong> thresholds shown above are <strong>unvalidated mathematical benchmarks</strong> created for hackathon demonstration. 
+              No two hillsides behave identically:
+            </p>
+            <p>
+              Slope angle of repose (e.g., 28&deg; vs 55&deg;), soil porosity, hydraulic permeability, bedrock depth, shear strength parameters (cohesion <em>c</em> and internal friction angle <em>&phi;</em>), and historical rainfall-trigger thresholds vary dramatically across Wayanad, Uttarakhand, Himachal Pradesh, and Sikkim.
+            </p>
+            <p class="highlight-caution">
+              <strong>These thresholds must NEVER be deployed in the field without empirical geotechnical soil sampling, multi-season baseline data logging, and validation alongside certified disaster management geologists.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: PROPOSED PILOT ROADMAP -->
+    <section class="section section-roadmap" id="roadmap">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag">PROJECT TIMELINE</span>
+          <h2 class="section-title">Proposed Pilot Implementation Roadmap</h2>
+          <p class="section-description">
+            A staged, responsible progression from breadboard bench verification to multi-slope academic pilot review.
+          </p>
+        </div>
+
+        <!-- INTERACTIVE WEEK-BY-WEEK TIMELINE STEPPER -->
+        <div class="week-timeline-stepper" id="weekTimelineStepper">
+          <div class="week-stepper-header">
+            <div class="week-title-wrap">
+              <span class="sub-tag">WEEK-BY-WEEK TRANSITION &bull; 40-WEEK PROGRESSION</span>
+              <h3>Interactive Week-by-Week Deployment Timeline</h3>
+              <p>Step through each milestone week with folding transitions to observe hardware tests, geotechnical validations, and deliverables.</p>
+            </div>
+            
+            <div class="week-stepper-actions">
+              <button class="btn btn-sm btn-teal-outline" id="btnPrevWeek" title="Previous Week">
+                &larr; Prev Week
+              </button>
+              <button class="btn btn-sm btn-vermillion" id="btnAutoPlayWeek" title="Auto-advance week by week">
+                <span id="autoPlayIcon">▶</span> <span id="autoPlayText">Auto-Play Weeks</span>
+              </button>
+              <button class="btn btn-sm btn-teal-outline" id="btnNextWeek" title="Next Week">
+                Next Week &rarr;
+              </button>
+            </div>
+          </div>
+
+          <!-- Overall 40-Week Timeline Progress Gauge -->
+          <div class="week-progress-gauge">
+            <div class="gauge-meta-row">
+              <span class="gauge-label" id="weekGaugeLabel">WEEK 01 OF 40 &bull; BENCH DEMO &amp; HARDWARE VALIDATION</span>
+              <strong class="gauge-percent" id="weekGaugePercent">2.5% Complete</strong>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-fill" id="weekGaugeFill" style="width: 2.5%;"></div>
+            </div>
+          </div>
+
+          <!-- Horizontal Week Scrubber Navigation -->
+          <div class="week-pills-scroll" id="weekPillsScroll">
+            <button class="week-pill active" data-week-idx="0"><span>W01</span><small>Bench Bus</small></button>
+            <button class="week-pill" data-week-idx="1"><span>W02</span><small>Power Sleep</small></button>
+            <button class="week-pill" data-week-idx="2"><span>W03</span><small>IP66 Casing</small></button>
+            <button class="week-pill" data-week-idx="3"><span>W04</span><small>Hill Testbed</small></button>
+            <button class="week-pill" data-week-idx="4"><span>W05</span><small>Drift Baseline</small></button>
+            <button class="week-pill" data-week-idx="5"><span>W06</span><small>LoRa Mesh</small></button>
+            <button class="week-pill" data-week-idx="6"><span>W07</span><small>Dashboard</small></button>
+            <button class="week-pill" data-week-idx="7"><span>W08</span><small>Zero Audit</small></button>
+            <button class="week-pill" data-week-idx="8"><span>W09-12</span><small>3 Slopes</small></button>
+            <button class="week-pill" data-week-idx="9"><span>W13-16</span><small>Community</small></button>
+            <button class="week-pill" data-week-idx="10"><span>W17-24</span><small>Monsoon Stress</small></button>
+            <button class="week-pill" data-week-idx="11"><span>W25-40</span><small>SDMA Review</small></button>
+          </div>
+
+          <!-- Dynamic Active Week Card with 3D Slide & Folding Transition -->
+          <div class="week-card-stage" id="weekCardStage">
+            <div class="week-display-card" id="weekDisplayCard">
+              <!-- Dynamically populated and animated by initWeekTimelineController() -->
+            </div>
+          </div>
+        </div>
+
+        <div class="roadmap-divider">
+          <span>OR EXPLORE FULL 4-PHASE MASTER OVERVIEW</span>
+        </div>
+
+        <div class="roadmap-timeline">
+          <!-- Phase 1 -->
+          <div class="timeline-step">
+            <div class="step-marker">
+              <span class="step-badge">PHASE 1</span>
+              <span class="step-duration">1 WEEK</span>
+            </div>
+            <div class="step-content">
+              <h3>Bench Demo &amp; Hardware Validation</h3>
+              <p>
+                Assembling breadboard prototypes with ESP32, ADXL345, DHT22, BMP180, and dual capacitive probes. Rigorous validation of sensor communication over I2C/SPI buses, synthetic signal calibration, interrupt handling for tipping buckets, and power profiling under simulated deep sleep cycles.
+              </p>
+              <div class="step-deliverables">
+                <span>Deliverables: Verified firmware, breadboard schematic, synthetic test scripts</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="timeline-step">
+            <div class="step-marker">
+              <span class="step-badge">PHASE 2</span>
+              <span class="step-duration">1 MONTH</span>
+            </div>
+            <div class="step-content">
+              <h3>Controlled Field Test</h3>
+              <p>
+                Deployment of a single prototype node on an uninhabited, accessible hillside slope testbed. Evaluation of IP66 weatherproofing against heavy rain, solar panel MPPT harvesting through cloud cover, telemetry packet reliability, and baseline noise analysis of diurnal temperature fluctuations on accelerometer tilt.
+              </p>
+              <div class="step-deliverables">
+                <span>Deliverables: Enclosure thermal report, 30-day continuous telemetry dataset</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="timeline-step">
+            <div class="step-marker">
+              <span class="step-badge">PHASE 3</span>
+              <span class="step-duration">3 MONTHS</span>
+            </div>
+            <div class="step-content">
+              <h3>Pilot at Three Slopes</h3>
+              <p>
+                Deploying 3 sensor nodes across diverse slope profiles (e.g., road-cut slope, agricultural terraced slope, and forest embankment) in collaboration with a partner village community. Establishing local LoRa mesh communication, conducting village focal-point orientation workshops, and gathering feedback on dashboard clarity.
+              </p>
+              <div class="step-deliverables">
+                <span>Deliverables: 3-node comparative dataset, community accessibility feedback</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 4 -->
+          <div class="timeline-step">
+            <div class="step-marker">
+              <span class="step-badge">PHASE 4</span>
+              <span class="step-duration">6 MONTHS</span>
+            </div>
+            <div class="step-content">
+              <h3>Evidence Review &amp; Geotechnical Correlation</h3>
+              <p>
+                Rigorous empirical review comparing captured sensor trends against official IMD monsoon precipitation records, observed micro-slips, and geotechnical soil surveys. Tuning the Random Forest model feature weights, measuring false-positive rates, and submitting transparent findings to State Disaster Management Authorities (SDMAs).
+              </p>
+              <div class="step-deliverables">
+                <span>Deliverables: Peer-reviewed validation report, calibrated threshold guidelines</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: SAFETY & LIMITATIONS -->
+    <section class="section section-safety" id="safety">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-tag critical">CRITICAL INFORMATION</span>
+          <h2 class="section-title">Safety, Boundaries &amp; Limitations</h2>
+          <p class="section-description">
+            PRAHARI is strictly an academic hackathon proposal. Responsible deployment mandates complete transparency regarding what this system is—and what it is not.
+          </p>
+        </div>
+
+        <div class="safety-grid">
+          <div class="safety-card danger-card">
+            <div class="safety-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+            </div>
+            <h3>Not a Public Warning Service</h3>
+            <p>
+              PRAHARI is not authorized, certified, or intended to operate as a public early-warning siren or disaster broadcasting platform. It must never be relied upon as the primary safety mechanism for human settlements.
+            </p>
+          </div>
+
+          <div class="safety-card danger-card">
+            <div class="safety-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <h3>Does Not Issue Evacuation Orders</h3>
+            <p>
+              Evacuation orders are exclusively the legal, administrative, and operational prerogative of designated civil authorities (District Collectors, SDMAs, NDMAs). PRAHARI will never issue evacuation commands or trigger autonomous alarms.
+            </p>
+          </div>
+
+          <div class="safety-card warning-card">
+            <div class="safety-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            </div>
+            <h3>Does Not Connect to Real Hardware Yet</h3>
+            <p>
+              While the live mode connects to <code>https://api.prahari.space</code>, all data should be treated as experimental research packets. No certified safety-critical life-support operations are automated.
+            </p>
+          </div>
+
+          <div class="safety-card warning-card">
+            <div class="safety-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h3>Must Not Replace Official Guidance</h3>
+            <p>
+              In all meteorological events and landslide alerts, citizens and administrators must adhere strictly to advisories from the <strong>India Meteorological Department (IMD)</strong>, <strong>National Disaster Management Authority (NDMA)</strong>, and local administration.
+            </p>
+          </div>
+        </div>
+
+        <!-- Strict Boundary Summary Table -->
+        <div class="limitations-table-wrapper">
+          <h3 class="table-title">Summary of Explicit Project Boundaries</h3>
+          <table class="limitations-table">
+            <thead>
+              <tr>
+                <th>Capability / Feature</th>
+                <th>Current Status in Hackathon Project</th>
+                <th>Explanation &amp; Boundary</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Live ESP32 Telemetry Feed</strong></td>
+                <td><span class="status-pill status-live">ACTIVE CLIENT INTEGRATION</span></td>
+                <td>Website polls <code>api.prahari.space</code> directly; includes instant simulator fallback when physical nodes sleep.</td>
+              </tr>
+              <tr>
+                <td><strong>Prediction Accuracy Claim</strong></td>
+                <td><span class="status-pill status-no">NO VALIDATED ACCURACY</span></td>
+                <td>Machine learning model is a conceptual proposal; no validated statistical accuracy is claimed.</td>
+              </tr>
+              <tr>
+                <td><strong>Lead Warning Time (e.g. 30-min)</strong></td>
+                <td><span class="status-pill status-no">NO TIME GUARANTEE</span></td>
+                <td>We do not claim a fixed warning window. Landslide kinetics vary from gradual creep to abrupt rupture.</td>
+              </tr>
+              <tr>
+                <td><strong>Automated SMS / Sirens</strong></td>
+                <td><span class="status-pill status-no">NOT IMPLEMENTED</span></td>
+                <td>No automated public alarms or SMS dispatches to avoid risk of panic from uncalibrated test data.</td>
+              </tr>
+              <tr>
+                <td><strong>Real-World Field Deployment</strong></td>
+                <td><span class="status-pill status-no">EXPERIMENTAL PILOT ONLY</span></td>
+                <td>Project is in the prototype and field test phase according to the proposed roadmap.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: CONFIGURE API ENDPOINT -->
+  <dialog id="apiConfigModal" class="api-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Configure PRAHARI Backend API</h3>
+        <button id="closeApiModalBtn" class="btn-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label for="inputApiEndpoint">Backend Base URL:</label>
+        <input type="url" id="inputApiEndpoint" value="https://api.prahari.space" placeholder="https://api.prahari.space" />
+        <small class="modal-hint">
+          Default: <code>https://api.prahari.space</code>. You can also specify a local testing server (e.g. <code>http://localhost:5000</code>).
+        </small>
+      </div>
+      <div class="modal-footer">
+        <button id="resetApiEndpointBtn" class="btn btn-sm btn-ghost">Reset Default</button>
+        <button id="saveApiEndpointBtn" class="btn btn-sm btn-vermillion">Save &amp; Reconnect</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-col brand-col">
+        <div class="footer-brand">
+          <div class="logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="m8 3 4 8 5-5 5 15H2L8 3z"></path>
+            </svg>
+          </div>
+          <span class="logo-title">PRAHARI<span class="accent-dot">.</span></span>
+        </div>
+        <p class="footer-desc">
+          Proposed landslide preparedness and local slope-monitoring system for villages in landslide-prone regions like Wayanad. Built with heritage from <strong>&lt;HYPNEXIS&gt;</strong> and <strong>prahari.space</strong>.
+        </p>
+        <div class="footer-tags">
+          <span class="tag">ESP32 IoT</span>
+          <span class="tag">Random Forest AI</span>
+          <span class="tag">Wayanad Monitor</span>
+          <span class="tag">api.prahari.space</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Navigation</h4>
+        <ul class="footer-links">
+          <li><a href="#about">Project Explanation</a></li>
+          <li><a href="#dashboard">Dashboard (Live &amp; Sim)</a></li>
+          <li><a href="#architecture">Sensor Architecture</a></li>
+          <li><a href="#pipeline">Data Flow Pipeline</a></li>
+          <li><a href="#ai-model">Random Forest Model</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Governance &amp; Safety</h4>
+        <ul class="footer-links">
+          <li><a href="#thresholds">60% &amp; 85% Review Thresholds</a></li>
+          <li><a href="#thresholds">Geotechnical Field Calibration</a></li>
+          <li><a href="#roadmap">Proposed 4-Phase Roadmap</a></li>
+          <li><a href="#safety">Project Limitations &amp; Boundaries</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Official Authorities</h4>
+        <p class="footer-subtext">For verified warnings and evacuation directives, always consult:</p>
+        <ul class="footer-links">
+          <li><a href="https://mausam.imd.gov.in" target="_blank" rel="noopener noreferrer">India Meteorological Department (IMD) &nearr;</a></li>
+          <li><a href="https://ndma.gov.in" target="_blank" rel="noopener noreferrer">National Disaster Management Authority (NDMA) &nearr;</a></li>
+          <li><a href="https://sdma.kerala.gov.in" target="_blank" rel="noopener noreferrer">Kerala State Disaster Management (KSDMA) &nearr;</a></li>
+          <li><a href="https://www.prahari.space" target="_blank" rel="noopener noreferrer">Original prahari.space &nearr;</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-container">
+        <p>&copy; 2026 PRAHARI &bull; Integrated with <code>api.prahari.space</code>. All readings are for research &amp; preparedness demonstration.</p>
+        <div class="footer-bottom-badge">
+          <span>STATUS: LIVE BACKEND CLIENT + SIMULATION ENGINE</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main JavaScript File -->
+  <script type="module" src="./src/main.js"></script>
+</body>
 </html>
